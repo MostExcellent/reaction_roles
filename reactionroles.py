@@ -66,7 +66,7 @@ async def reactroles(ctx, *args):
             async for message in channel.history(limit=1):
                 if message.author == bot.user:
                     # Handle spaces in role names
-                    merged_args = []
+                    merged_args = handle_map_spaces(args)
                     for arg in args:
                         if "/" not in arg:
                             merged_args.append(" " + arg)
@@ -101,6 +101,16 @@ async def add_reaction_role(ctx, message, emoji, role_name):
     except Exception:
         await ctx.send("Unknown error")
         print("Unknown error")
+
+#handle spaces in mappings
+def handle_map_spaces(args):
+    merged_args = []
+    for arg in args:
+        if "/" not in arg:
+            merged_args[-1] += " " + arg
+        else:
+            merged_args.append(arg)
+    return merged_args
 
 
 bot.run('YOUR_BOT_TOKEN_HERE')
