@@ -63,24 +63,24 @@ async def reactroles(ctx, *args):
             await ctx.send("This is not a valid channel")
         else:
         # Do reaction role stuff
-        async for message in channel.history(limit=1):
-            if message.author == bot.user:
-                # Handle spaces in role names
-                merged_args = []
-                for arg in args:
-                    if "/" not in arg:
-                        merged_args.append(" " + arg)
-                    else:
-                        merged_args.append(arg)
+            async for message in channel.history(limit=1):
+                if message.author == bot.user:
+                    # Handle spaces in role names
+                    merged_args = []
+                    for arg in args:
+                        if "/" not in arg:
+                            merged_args.append(" " + arg)
+                        else:
+                            merged_args.append(arg)
 
-                for mapping in merged_args:
-                    emoji, role_name = mapping.split('/')
-                    if role_name != 'admin':
-                        await add_reaction_role(ctx, message, emoji, role_name)
-                    else:
-                        await ctx.send("You can't add admin role")
-                        print("You can't add admin role")
-                break
+                    for mapping in merged_args:
+                        emoji, role_name = mapping.split('/')
+                        if role_name != 'admin':
+                            await add_reaction_role(ctx, message, emoji, role_name)
+                        else:
+                            await ctx.send("You can't add admin role")
+                            print("You can't add admin role")
+                    break
 
 
 async def add_reaction_role(ctx, message, emoji, role_name):
