@@ -7,7 +7,7 @@ intents.members = True
 intents.guilds = True
 
 bot = commands.Bot(command_prefix='!', intents=intents)
-react_channel_id = 123456789 #channel id here
+react_channel_id = 123456789  # Replace with your desired channel ID
 
 
 @bot.event
@@ -30,8 +30,9 @@ async def on_raw_reaction_add(payload):
         channel = bot.get_channel(payload.channel_id)
         member = guild.get_member(payload.user_id)
         # Check if channel isn't private, a forum, voice, or a category
+        # Check if channel and member exist and member is not a bot
         if (
-            channel is not None
+            channel is not None and member is not None and  not member.bot
             and not (
                 isinstance(channel, discord.ForumChannel)
                 or isinstance(channel, discord.CategoryChannel)
@@ -50,6 +51,7 @@ async def on_raw_reaction_add(payload):
             else:
                 print("Channel type is not fetchable")
 
+
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def reactroles(ctx, *args):
@@ -60,28 +62,27 @@ async def reactroles(ctx, *args):
         if isinstance(channel, (discord.abc.PrivateChannel, discord.CategoryChannel, discord.ForumChannel, discord.VoiceChannel)):
             await ctx.send("This is not a valid channel")
         else:
-            # Do reaction role stuff
-            async for message in channel.history(limit=1):
+        # Do reaction role stuff
+        async for message in channel.history(limit=1):
+            if message.author == bot.user:
+                # Handle spaces in role names
+                merged_args = []
+                for arg in args:
+                    if "/" not in arg:
+                        merged_args.append(" " + arg)
+                    else:
+                        merged_args.append(arg)
 
-                if message.author == bot.user:
-                    #handle spaces in role names
-                    merged_args = []
-                    for arg in args:
-                        if "/" not in arg:
-                            merged_args.append(" " + arg)
-                        else:
-                            merged_args.append(arg)
+                for mapping in merged_args:
+                    emoji, role_name = mapping.split('/')
+                    if role_name != 'admin':
+                        await add_reaction_role(ctx, message, emoji, role_name)
+                    else:
+                        await ctx.send("You can't add admin role")
+                        print("You can't add admin role")
+                break
 
-                    for mapping in merged_args:
-                        emoji, role_name = mapping.split('/')
-                        if role_name != 'admin':
-                            await add_reaction_role(ctx, message, emoji, role_name)
-                        else:
-                            await ctx.send("You can't add admin role")
-                            print("You can't add admin role")
-                    break
 
-# Adds reactions to message
 async def add_reaction_role(ctx, message, emoji, role_name):
     try:
         role = discord.utils.get(ctx.guild.roles, name=role_name)
@@ -91,7 +92,6 @@ async def add_reaction_role(ctx, message, emoji, role_name):
         else:
             await ctx.send(f"Role '{role_name}' doesn't exist")
             print(f"Role '{role_name}' doesn't exist")
-    # Error handling
     except discord.Forbidden:
         await ctx.send("I can't add reactions here")
         print("I can't add reactions")
@@ -101,5 +101,6 @@ async def add_reaction_role(ctx, message, emoji, role_name):
     except Exception:
         await ctx.send("Unknown error")
         print("Unknown error")
+
 
 bot.run('YOUR_BOT_TOKEN_HERE')
