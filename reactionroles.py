@@ -5,8 +5,9 @@ intents = discord.Intents.default()
 intents.reactions = True
 intents.members = True
 intents.guilds = True
+intents.messages = True
 
-bot = commands.Bot(command_prefix='!', intents=intents)
+bot = commands.Bot(command_prefix='/', intents=intents)
 
 
 @bot.event
