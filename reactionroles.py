@@ -7,14 +7,13 @@ intents.members = True
 intents.guilds = True
 
 bot = commands.Bot(command_prefix='!', intents=intents)
-react_channel_id = 123456789  # Replace with your desired channel ID
 
 
 @bot.event
 async def on_ready():
     print(f'Bot is ready and logged in as {bot.user}')
 
-# Checks reactions and adds roles
+
 @bot.event
 async def on_raw_reaction_add(payload):
     guild_id = payload.guild_id
@@ -29,25 +28,23 @@ async def on_raw_reaction_add(payload):
     if role is not None:
         channel = bot.get_channel(payload.channel_id)
         member = guild.get_member(payload.user_id)
-        # Check if channel isn't private, a forum, voice, or a category
-        # Check if channel and member exist and member is not a bot
+        # Check if channel is neither a forum, a category, or private
         if (
-            channel is not None and member is not None and  not member.bot
+            channel is not None
+            and member is not None
+            and not member.bot
             and not (
                 isinstance(channel, discord.ForumChannel)
                 or isinstance(channel, discord.CategoryChannel)
                 or isinstance(channel, discord.abc.PrivateChannel)
-                or isinstance(channel, discord.VoiceChannel)
             )
-            ):
-            print("Channel is not a valid type")
-            return
-        # Check if channel exists and member is not a bot
-        elif channel is not None and member is not None and not member.bot:
+        ):
             if isinstance(channel, discord.TextChannel):
                 message = await channel.fetch_message(payload.message_id)
                 await member.add_roles(role)
-                print(f"Assigned role {role_name} to user {member.display_name} for reacting with {emoji} in message {message.id}")
+                print(
+                    f"Assigned role {role_name} to user {member.display_name} for reacting with {emoji} in message {message.id}"
+                )
             else:
                 print("Channel type is not fetchable")
 
@@ -58,29 +55,18 @@ async def reactroles(ctx, *args):
     channel = ctx.channel
 
     if channel is not None:
-        # Check if channel isn't private, a forum, voice, or a category
-        if isinstance(channel, (discord.abc.PrivateChannel, discord.CategoryChannel, discord.ForumChannel, discord.VoiceChannel)):
-            await ctx.send("This is not a valid channel")
-        else:
         # Do reaction role stuff
-            async for message in channel.history(limit=1):
-                if message.author == bot.user:
-                    # Handle spaces in role names
-                    merged_args = handle_map_spaces(args)
-                    for arg in args:
-                        if "/" not in arg:
-                            merged_args.append(" " + arg)
-                        else:
-                            merged_args.append(arg)
-
-                    for mapping in merged_args:
-                        emoji, role_name = mapping.split('/')
-                        if role_name != 'admin':
-                            await add_reaction_role(ctx, message, emoji, role_name)
-                        else:
-                            await ctx.send("You can't add admin role")
-                            print("You can't add admin role")
-                    break
+        async for message in channel.history(limit=1):
+            if message.author == bot.user:
+                merged_args = handle_map_spaces(args)
+                for mapping in merged_args:
+                    emoji, role_name = mapping.split('/')
+                    if role_name != 'admin':
+                        await add_reaction_role(ctx, message, emoji, role_name)
+                    else:
+                        await ctx.send("You can't add the admin role")
+                        print("You can't add the admin role")
+                break
 
 
 async def add_reaction_role(ctx, message, emoji, role_name):
@@ -102,7 +88,8 @@ async def add_reaction_role(ctx, message, emoji, role_name):
         await ctx.send("Unknown error")
         print("Unknown error")
 
-#handle spaces in mappings
+
+# Handle spaces in mappings
 def handle_map_spaces(args):
     merged_args = []
     for arg in args:
@@ -113,4 +100,11 @@ def handle_map_spaces(args):
     return merged_args
 
 
-bot.run('YOUR_BOT_TOKEN_HERE')
+def read_token():
+    with open("react_token.txt", "r") as file:
+        token = file.read().strip()
+    return token
+
+
+bot_token = read_token()
+bot.run(bot_token)
