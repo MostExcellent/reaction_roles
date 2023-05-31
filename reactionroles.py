@@ -5,7 +5,7 @@ intents = discord.Intents.default()
 intents.reactions = True
 intents.members = True
 intents.guilds = True
-intents.messages = True
+intents.messages = True  # Enable privileged message_content intent
 
 bot = commands.Bot(command_prefix='/', intents=intents)
 
@@ -23,7 +23,7 @@ async def on_raw_reaction_add(payload):
         return
 
     emoji = payload.emoji.name
-    role_name = payload.emoji.name
+    role_name = payload.role.name
 
     role = discord.utils.get(guild.roles, name=role_name)
     if role is not None:
@@ -54,20 +54,19 @@ async def on_raw_reaction_add(payload):
 @commands.has_permissions(administrator=True)
 async def reactroles(ctx, *args):
     channel = ctx.channel
+    replied_message = ctx.message.reference.resolved if ctx.message.reference else None
 
-    if channel is not None:
-        # Do reaction role stuff
-        async for message in channel.history(limit=1):
-            if message.author == bot.user:
-                merged_args = handle_map_spaces(args)
-                for mapping in merged_args:
-                    emoji, role_name = mapping.split('/')
-                    if role_name != 'admin':
-                        await add_reaction_role(ctx, message, emoji, role_name)
-                    else:
-                        await ctx.send("You can't add the admin role")
-                        print("You can't add the admin role")
-                break
+    if replied_message:
+        merged_args = handle_map_spaces(args)
+        for mapping in merged_args:
+            emoji, role_name = mapping.split('/')
+            if role_name != 'admin':
+                await add_reaction_role(ctx, replied_message, emoji, role_name)
+            else:
+                await ctx.send("You can't add the admin role")
+                print("You can't add the admin role")
+    else:
+        await ctx.send("Please reply to a message to use this command.")
 
 
 async def add_reaction_role(ctx, message, emoji, role_name):
