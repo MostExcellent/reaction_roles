@@ -24,7 +24,7 @@ async def on_raw_reaction_add(payload):
     if guild is None:
         return
 
-    emoji = payload.emoji.name
+    emoji_name = payload.emoji.name
     role_name = payload.role.name
 
     role = discord.utils.get(guild.roles, name=role_name)
@@ -41,7 +41,7 @@ async def on_raw_reaction_add(payload):
             if isinstance(channel, discord.TextChannel):
                 message = await channel.fetch_message(payload.message_id)
                 await member.add_roles(role)
-                print(f"Assigned role {role_name} to user {member.display_name} for reacting with {emoji} in message {message.id}")
+                print(f"Assigned role {role_name} to user {member.display_name} for reacting with {emoji_name} in message {message.id}")
             else:
                 print("Channel type is not fetchable")
 
@@ -60,9 +60,9 @@ async def reactroles(ctx, *args):
     if replied_message:
         merged_args = handle_map_spaces(args)
         for mapping in merged_args:
-            emoji, role_name = mapping.split('/')
+            emoji_name, role_name = mapping.split('/')
             if role_name != 'admin':
-                await add_reaction_role(ctx, replied_message, emoji, role_name)
+                await add_reaction_role(ctx, replied_message, emoji_name, role_name)
             else:
                 await ctx.send("You can't add the admin role")
                 print("You can't add the admin role")
@@ -70,20 +70,25 @@ async def reactroles(ctx, *args):
         await ctx.send("Please reply to a message to use this command.")
 
 
-async def add_reaction_role(ctx, message, emoji, role_name):
+async def add_reaction_role(ctx, message, emoji_name, role_name):
     """Add a reaction and assign a role to a message.
 
     Arguments:
     - ctx: The context of the command.
     - message: The message to add the reaction and assign the role.
-    - emoji: The emoji to react with.
+    - emoji_name: The name of the emoji to react with.
     - role_name: The name of the role to assign.
     """
     try:
         role = discord.utils.get(ctx.guild.roles, name=role_name)
         if role is not None:
-            await message.add_reaction(emoji)
-            print(f"Added reaction {emoji} for role {role_name}")
+            emoji = discord.utils.get(bot.emojis, name=emoji_name)
+            if emoji is not None:
+                await message.add_reaction(emoji)
+                print(f"Added reaction {emoji} for role {role_name}")
+            else:
+                await ctx.send(f"Emoji '{emoji_name}' not found")
+                print(f"Emoji '{emoji_name}' not found")
         else:
             await ctx.send(f"Role '{role_name}' doesn't exist")
             print(f"Role '{role_name}' doesn't exist")
