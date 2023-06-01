@@ -7,7 +7,7 @@ intents.members = True
 intents.guilds = True
 intents.message_content = True  # Enable privileged message_content intent
 
-bot = commands.Bot(command_prefix='/', intents=intents)
+bot = commands.Bot(command_prefix='/', intents=intents, help_command=commands.DefaultHelpCommand())
 
 
 @bot.event
@@ -50,7 +50,7 @@ async def on_raw_reaction_add(payload):
                 print("Channel type is not fetchable")
 
 
-@bot.command()
+@bot.command(brief="Assign roles based on reactions to a message.", description="Assign roles to users based on their reactions to a message.")
 @commands.has_permissions(administrator=True)
 async def reactroles(ctx, *args):
     """Assign roles based on reactions to a message.
