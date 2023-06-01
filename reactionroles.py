@@ -53,6 +53,11 @@ async def on_raw_reaction_add(payload):
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def reactroles(ctx, *args):
+    """Assign roles based on reactions to a message.
+
+    Arguments:
+    - args: Pairs of emoji and role name, separated by a forward slash (/).
+    """
     channel = ctx.channel
     replied_message = ctx.message.reference.resolved if ctx.message.reference else None
 
@@ -70,6 +75,14 @@ async def reactroles(ctx, *args):
 
 
 async def add_reaction_role(ctx, message, emoji, role_name):
+    """Add a reaction and assign a role to a message.
+
+    Arguments:
+    - ctx: The context of the command.
+    - message: The message to add the reaction and assign the role.
+    - emoji: The emoji to react with.
+    - role_name: The name of the role to assign.
+    """
     try:
         role = discord.utils.get(ctx.guild.roles, name=role_name)
         if role is not None:
@@ -91,6 +104,14 @@ async def add_reaction_role(ctx, message, emoji, role_name):
 
 # Handle spaces in mappings
 def handle_map_spaces(args):
+    """Handle spaces in mapping arguments.
+
+    Arguments:
+    - args: List of mapping arguments.
+
+    Returns:
+    - List of merged mapping arguments.
+    """
     merged_args = []
     for arg in args:
         if "/" not in arg:
@@ -101,6 +122,7 @@ def handle_map_spaces(args):
 
 
 def read_token():
+    """Read the bot token from a file named 'react_token.txt'."""
     with open("react_token.txt", "r") as file:
         token = file.read().strip()
     return token
