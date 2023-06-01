@@ -5,7 +5,7 @@ intents = discord.Intents.default()
 intents.reactions = True
 intents.members = True
 intents.guilds = True
-intents.messages = True  # Enable privileged message_content intent
+intents.message_content = True  # Enable privileged message_content intent
 
 bot = commands.Bot(command_prefix='/', intents=intents)
 
